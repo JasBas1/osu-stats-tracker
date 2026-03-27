@@ -1,0 +1,31 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/osu-stats-repo/osu-stats-tracker:$COMMIT_SHA'
+      - '.'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'push'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/osu-stats-repo/osu-stats-tracker:$COMMIT_SHA'
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - 'run'
+      - 'deploy'
+      - 'osu-stats-tracker'
+      - '--image'
+      - 'us-central1-docker.pkg.dev/$PROJECT_ID/osu-stats-repo/osu-stats-tracker:$COMMIT_SHA'
+      - '--region'
+      - 'us-central1'
+      - '--platform'
+      - 'managed'
+      - '--allow-unauthenticated'
+      - '--set-secrets'
+      - 'OSU_CLIENT_ID=OSU_CLIENT_ID:latest,OSU_CLIENT_SECRET=OSU_CLIENT_SECRET:latest'
+
+images:
+  - 'us-central1-docker.pkg.dev/$PROJECT_ID/osu-stats-repo/osu-stats-tracker:$COMMIT_SHA'
